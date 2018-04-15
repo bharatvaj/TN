@@ -28,10 +28,13 @@ void TN::browse(int type)
 		break; // CANCEL
 	default:
 		std::string s(fnfc.filename());
-		if(type == 0){
+		if (type == 0)
+		{
 			imagePath = s;
 			edit1->value(s.c_str());
-		} else {
+		}
+		else
+		{
 			sheetPath = s;
 			edit2->value(s.c_str());
 		}
@@ -67,6 +70,7 @@ void TN::onDestroy()
 
 void TN::convert()
 {
+	Sheet *sheet = new Sheet();
 	log_inf(TN_MAIN, "Converting Image");
 }
 

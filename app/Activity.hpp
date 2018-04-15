@@ -45,6 +45,11 @@ public:
     onStart();
   }
 
+  Fl_Window *getWindow(int x, int y)
+  {
+    win->size(x, y);
+    return win;
+  }
   Fl_Window *getWindow()
   {
     return win;

@@ -4,9 +4,11 @@
 #include <future>
 #include <clog/clog.h>
 #include <xlsxwriter.h>
-#include "Activity.hpp"
 #include <FL/Fl_Native_File_Chooser.H>
 #include <FL/Fl_Input.H>
+
+#include "Activity.hpp"
+#include "Sheet.hpp"
 
 #define TN_MAIN "TIFFNumbering"
 #define UI_MAIN "UI"
@@ -24,7 +26,7 @@ private:
 
   Fl_Input *edit1;
   Fl_Button *editBtn1;
-  
+
   Fl_Input *edit2;
   Fl_Button *editBtn2;
 
