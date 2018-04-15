@@ -19,7 +19,6 @@ protected:
   }
   virtual void onStart()
   {
-    onCreate();
   }
   virtual void onResume()
   {
@@ -40,7 +39,7 @@ protected:
 public:
   Activity()
   {
-    win = new Fl_Window(300, 200, "TIFF Numbering");
+    win = new Fl_Window(400, 200, "TIFF Numbering");
     win->show();
     log_inf(_ACT_H, "Main UI created");
     onStart();
@@ -53,6 +52,7 @@ public:
 
   int run()
   {
+    onCreate();
     return Fl::run();
   }
 };
