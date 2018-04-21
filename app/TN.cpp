@@ -30,12 +30,12 @@ void TN::browse(int type)
 		std::string s(fnfc.filename());
 		if (type == 0)
 		{
-			imagePath = s;
+			Resources::getInstance()->setImagePath(s);
 			edit1->value(s.c_str());
 		}
 		else
 		{
-			sheetPath = s;
+			Resources::getInstance()->setSheetPath(s);
 			edit2->value(s.c_str());
 		}
 		break; // FILE CHOSEN
@@ -66,12 +66,14 @@ void TN::onCreate()
 
 void TN::onDestroy()
 {
+	super::onDestroy();
 }
 
 void TN::convert()
 {
-	Sheet *sheet = new Sheet();
 	log_inf(TN_MAIN, "Converting Image");
+	ActivityInvoker<Sheet> ai;
+	ai.startActivity();
 }
 
 void TN::buttonCallback(Fl_Widget *o, void *type)
@@ -119,6 +121,6 @@ void sigint_handler(int sig)
 int main(int argc, char *argv[])
 {
 	signal(SIGINT, sigint_handler);
-	TN *tn = TN::getInstance();
-	return tn->run();
+	ActivityInvoker<TN> ai;
+	return ai.startActivity();
 }

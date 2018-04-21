@@ -6,7 +6,7 @@ endif()
 set(BUILD_SHARED_LIBS OFF)
 set (CMAKE_CXX_STANDARD 11)
 add_subdirectory(clog ${CMAKE_SOURCE_DIR}/build/clog/)
-add_subdirectory(libxlsxwriter ${CMAKE_SOURCE_DIR}/build/libxlsxwriter)
+add_subdirectory(xlsxio ${CMAKE_SOURCE_DIR}/build/xlsxio)
 #add_subdirectory(tesseract ${CMAKE_SOURCE_DIR}/build/tesseract)
 
 #main application

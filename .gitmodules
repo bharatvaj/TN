@@ -1,9 +1,9 @@
 [submodule "clog"]
 	path = clog
 	url = https://github.com/bharatph/clog
-[submodule "libxlsxwriter"]
-	path = libxlsxwriter
-	url = https://github.com/jmcnamara/libxlsxwriter
 [submodule "tesseract"]
 	path = tesseract
 	url = https://github.com/tesseract-ocr/tesseract
+[submodule "xlsxio"]
+	path = xlsxio
+	url = https://github.com/brechtsanders/xlsxio

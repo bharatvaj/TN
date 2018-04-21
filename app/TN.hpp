@@ -3,10 +3,10 @@
 #include <functional>
 #include <future>
 #include <clog/clog.h>
-#include <xlsxwriter.h>
 #include <FL/Fl_Native_File_Chooser.H>
 #include <FL/Fl_Input.H>
 
+#include "ActivityInvoker.hpp"
 #include "Activity.hpp"
 #include "Sheet.hpp"
 
@@ -21,8 +21,6 @@ private:
   TN();
   void convert();
   void browse(int);
-  std::string sheetPath;
-  std::string imagePath;
 
   Fl_Input *edit1;
   Fl_Button *editBtn1;

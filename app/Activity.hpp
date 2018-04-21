@@ -7,18 +7,29 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Window.H>
 
+#include "Resources.hpp"
+
 class Activity
 {
 private:
   Fl_Window *win = nullptr;
 
 protected:
+public:
+  Activity()
+  {
+    win = new Fl_Window(400, 200, "TIFF Numbering");
+    log_inf(_ACT_H, "Main UI created");
+  }
   virtual void onCreate()
   {
-    log_inf(_ACT_H, "Activity created onCreate()");
+    log_inf(_ACT_H, "onCreate()");
+    win->show();
   }
   virtual void onStart()
   {
+    log_inf(_ACT_H, "onStart()");
+    onCreate();
   }
   virtual void onResume()
   {
@@ -36,15 +47,6 @@ protected:
   {
   }
 
-public:
-  Activity()
-  {
-    win = new Fl_Window(400, 200, "TIFF Numbering");
-    win->show();
-    log_inf(_ACT_H, "Main UI created");
-    onStart();
-  }
-
   Fl_Window *getWindow(int x, int y)
   {
     win->size(x, y);
@@ -57,7 +59,6 @@ public:
 
   int run()
   {
-    onCreate();
     return Fl::run();
   }
 };
