@@ -5,6 +5,7 @@
 #include <FL/Fl_Table.H>
 #include <FL/fl_draw.H>
 #include "Resources.hpp"
+#include <xlsxio_read.h>
 
 #define MAX_ROWS 30
 #define MAX_COLS 26 // A-Z

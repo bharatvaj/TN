@@ -3,12 +3,19 @@ project(TN)
 find_package(Threads)
 find_package(FLTK REQUIRED)
 
-add_executable(TN TN.hpp TN.cpp)
+add_executable(TN 
+TN.hpp
+Resources.hpp 
+Sheet.hpp 
+model/Connector.hpp
+main.cpp
+)
 
 target_include_directories(TN PUBLIC ${FLTK_INCLUDE_DIRS})
 
 target_link_libraries(TN ${CMAKE_THREAD_LIBS_INIT} )
 target_link_libraries(TN clog)
+target_link_libraries(TN libharu)
 target_include_directories(TN PUBLIC ../xlsxio/include)
 target_link_libraries(TN xlsxio_read_STATIC)
 target_link_libraries(TN xlsxio_write_STATIC)

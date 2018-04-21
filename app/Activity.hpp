@@ -13,6 +13,8 @@ class Activity
 {
 private:
   Fl_Window *win = nullptr;
+  int _x = 0;
+  int _y = 0;
 
 protected:
 public:
