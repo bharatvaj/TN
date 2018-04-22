@@ -2,6 +2,7 @@
 #define _TN_H "TIFFNumbering"
 #include <csignal>
 #include <iostream>
+#include <vector>
 #include <functional>
 #include <future>
 #include <clog/clog.h>
@@ -16,6 +17,7 @@
 #include "ActivityInvoker.hpp"
 #include "Activity.hpp"
 #include "Sheet.hpp"
+#include "OCRReader.hpp"
 #include "listener/OnEvent.hpp"
 
 class TN : public Activity
@@ -117,23 +119,29 @@ private:
     ai.startActivity();
   }
 
-  void preprocessImage()
+  std::vector<std::string> *processImage(std::string imagePath)
   {
     log_inf(_TN_H, "Image Preprocessing");
     //TODO convert from pdf if pdf is present
     //convert to the required resolution if needed
+    return OCRReader::getStringFromImage(imagePath);
   }
+
+  std::vector<std::vector<std::string>> *processExcel(std::string excelPath){
+    return nullptr;
+  }
+
+  void mixAndMatch(std::vector<std::string> *words, std::vector<std::vector<std::string> > *table){
+
+  }
+
 
   void convert()
   {
-    //start progressBar
     processStartUI();
-    Excel *excel = new Excel();
-    excel->openFile(Resources::getInstance()->getSheetPath());
-    excel->getSheets();
-    excel->getColumns();
-    delete excel;
-    preprocessImage();
+    auto imageStrings = processImage(Resources::getInstance()->getImagePath());
+    auto sheetStrings = processExcel(Resources::getInstance()->getSheetPath());
+    mixAndMatch(imageStrings, sheetStrings);
     processEndUI();
   }
 
