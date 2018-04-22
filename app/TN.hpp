@@ -5,12 +5,14 @@
 #include <functional>
 #include <future>
 #include <clog/clog.h>
-#include <apdf.h>
+#include <unistd.h>
 
 #include <FL/Fl_Native_File_Chooser.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Progress.H>
+#include <FL/fl_ask.H>
 
+#include "Excel.hpp"
 #include "ActivityInvoker.hpp"
 #include "Activity.hpp"
 #include "Sheet.hpp"
@@ -24,6 +26,8 @@ private:
 
   Fl_Input *edit1;
   Fl_Input *edit2;
+  Fl_Progress *progressBar;
+  Fl_Button *convertBtn;
 
   class OnFieldUpdateEventListener : public OnEvent<std::string>
   {
@@ -88,19 +92,49 @@ private:
     }
   }
 
+  void processStartUI()
+  {
+    progressBar->minimum(0); // set progress range to be 0.0 ~ 1.0
+    progressBar->maximum(1);
+    progressBar->color(0x88888800);           // background color
+    progressBar->selection_color(0x4444ff00); // progress bar color
+    progressBar->labelcolor(FL_WHITE);        // percent text color
+    for (int t = 1; t <= 500; t++)
+    {
+      progressBar->value(t / 500.0); // update progress bar with 0.0 ~ 1.0 value
+      char percent[10];
+      sprintf(percent, "%d%%", int((t / 500.0) * 100.0));
+      progressBar->label(percent); // update progress bar's label
+      Fl::check();                 // give fltk some cpu to update the screen
+      usleep(1000);                // 'your stuff' that's compute intensive
+    }
+    log_inf(_TN_H, "Converting Image");
+  }
+
+  void processEndUI()
+  {
+    ActivityInvoker<Sheet> ai;
+    ai.startActivity();
+  }
+
   void preprocessImage()
   {
     log_inf(_TN_H, "Image Preprocessing");
-    //convert from pdf if pdf is present
+    //TODO convert from pdf if pdf is present
     //convert to the required resolution if needed
   }
 
   void convert()
   {
-    log_inf(_TN_H, "Converting Image");
+    //start progressBar
+    processStartUI();
+    Excel *excel = new Excel();
+    excel->openFile(Resources::getInstance()->getSheetPath());
+    excel->getSheets();
+    excel->getColumns();
+    delete excel;
     preprocessImage();
-    ActivityInvoker<Sheet> ai;
-    ai.startActivity();
+    processEndUI();
   }
 
   TN()
@@ -110,11 +144,14 @@ private:
 
   int __x = 60;
   int __y = 20;
-  Fl_Input *createField(std::string label, int type)
+  Fl_Input *createField(const char *label, int type)
   {
     Fl_Input *input = new Fl_Input(__x, __y, 250, 30, label);
     Fl_Button *btn = new Fl_Button(__x + 250, __y, 60, 30, "Browse");
     btn->callback(&TN::buttonCallback, new int(type));
+    getWindow()->add(input);
+    getWindow()->add(btn);
+    __y += 60;
     return input;
   }
 
@@ -124,15 +161,12 @@ public:
     super::onCreate();
     edit1 = createField("Image", 1);
     edit2 = createField("XLSX", 2);
-
-    Fl_Button *btn = new Fl_Button(320, 140, 60, 30, "Convert");
-    btn->callback(&TN::buttonCallback, new int(0));
-
-    getWindow()->add(edit1);
-    getWindow()->add(editBtn1);
-    getWindow()->add(edit2);
-    getWindow()->add(editBtn2);
-    getWindow()->add(btn);
+    progressBar = new Fl_Progress(0, 380, 400, 20);
+    convertBtn = new Fl_Button(320, 140, 60, 30, "Convert");
+    convertBtn->callback(&TN::buttonCallback, new int(0));
+    getWindow()->add(convertBtn);
+    getWindow()->add(progressBar);
+    getWindow()->resizable(progressBar);
   }
 
   void onDestroy()

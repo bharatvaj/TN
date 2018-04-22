@@ -76,6 +76,7 @@ class Sheet : public Activity
         getWindow()->add(table);
         getWindow()->resizable(table);
         getWindow()->add(btn);
+        while(getWindow()->shown()) Fl::wait();
     }
 };
 Sheet *Sheet::instance = nullptr;
