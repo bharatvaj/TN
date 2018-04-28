@@ -66,6 +66,7 @@ class Excel
         }
         log_inf(_EXCEL_H, "Closing sheetlist");
         xlsxioread_sheetlist_close(sheetlist);
+	return sheets;
     }
 
     //TODO
@@ -130,6 +131,7 @@ class Excel
     {
         if (!isFileValid())
             return std::string("");
+	return std::string(""); //send correct value here
     }
 
     //TODO

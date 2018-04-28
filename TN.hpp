@@ -13,41 +13,88 @@
 #include <FL/Fl_Progress.H>
 #include <FL/fl_ask.H>
 
-#include "Excel.hpp"
-#include "ActivityInvoker.hpp"
-#include "Activity.hpp"
-#include "Sheet.hpp"
-#include "OCRReader.hpp"
-#include "listener/OnEvent.hpp"
+#include <ui/Activity.hpp>
+#include "ui/ActivityInvoker.hpp"
 
+#include <Event.hpp>
+
+#include "OCRReader.hpp"
+#include "listener/OnEventListener.hpp"
+
+namespace tn
+{
 class TN : public Activity
 {
 private:
   typedef Activity super;
-  static TN *instance;
+
+  std::string imagePath;
+  std::string sheetPath;
+  std::vector<std::vector<std::string>> dataCells;
+  OnEventListener<std::string> *onEventListener = nullptr;
 
   Fl_Input *edit1;
   Fl_Input *edit2;
   Fl_Progress *progressBar;
   Fl_Button *convertBtn;
 
-  class OnFieldUpdateEventListener : public OnEvent<std::string>
+  class OnFieldUpdateEventListener : public OnEventListener<std::string>
   {
   public:
     OnFieldUpdateEventListener()
     {
     }
-    void onEvent(std::string s) override
+    void onEvent(Activity *act, std::string s) override
     {
-      TN::getInstance()->edit1->value(Resources::getInstance()->getImagePath().c_str());
-      TN::getInstance()->edit2->value(Resources::getInstance()->getSheetPath().c_str());
+      TN *tn = (TN *)act;
+      tn->edit1->value(tn->getImagePath().c_str());
+      tn->edit2->value(tn->getSheetPath().c_str());
     }
   };
+
+  void setOnUpdateEventListener(OnEventListener<std::string> *onEventListener)
+  {
+    this->onEventListener = onEventListener;
+  }
+  void setImagePath(std::string imagePath)
+  {
+    this->imagePath = imagePath;
+  }
+
+  std::string getImagePath()
+  {
+    return imagePath;
+  }
+
+  std::string getSheetPath()
+  {
+    return sheetPath;
+  }
+
+  void setSheetPath(std::string sheetPath)
+  {
+    this->sheetPath = sheetPath;
+  }
+
+  void setOnEventListener(enum Event e, OnEventListener<std::string> *listener)
+  {
+  }
+
+  void onImageSelected(std::string image)
+  {
+
+    edit1->value(image.c_str());
+  }
+
+  void onSheetSelected(std::string sheet)
+  {
+  }
 
   static void
   buttonCallback(Fl_Widget *o, void *type)
   {
-    TN *tn = TN::getInstance();
+    //TN *tn = TN::getInstance();
+    TN *tn;
     switch (*(int *)type)
     {
     case 0:
@@ -87,9 +134,11 @@ private:
       break; // CANCEL
     default:
       if (type == 0)
-        Resources::getInstance()->setImagePath(fnfc.filename());
+        ;
+      //TNController::getInstance()->setImagePath(fnfc.filename());
       else
-        Resources::getInstance()->setSheetPath(fnfc.filename());
+        ;
+      //TNController::getInstance()->setSheetPath(fnfc.filename());
       break; // FILE CHOSEN
     }
   }
@@ -113,10 +162,9 @@ private:
     log_inf(_TN_H, "Converting Image");
   }
 
+  //TODO
   void processEndUI()
   {
-    ActivityInvoker<Sheet> ai;
-    ai.startActivity();
   }
 
   std::vector<std::string> *processImage(std::string imagePath)
@@ -127,27 +175,27 @@ private:
     return OCRReader::getStringFromImage(imagePath);
   }
 
-  std::vector<std::vector<std::string>> *processExcel(std::string excelPath){
+  std::vector<std::vector<std::string>> *processExcel(std::string excelPath)
+  {
     return nullptr;
   }
 
-  void mixAndMatch(std::vector<std::string> *words, std::vector<std::vector<std::string> > *table){
-
+  void mixAndMatch(std::vector<std::string> *words, std::vector<std::vector<std::string>> *table)
+  {
   }
 
+  void setProgress(int progress)
+  {
+    //progressBar
+  }
 
   void convert()
   {
     processStartUI();
-    auto imageStrings = processImage(Resources::getInstance()->getImagePath());
-    auto sheetStrings = processExcel(Resources::getInstance()->getSheetPath());
+    auto imageStrings = processImage(getImagePath());
+    auto sheetStrings = processExcel(getSheetPath());
     mixAndMatch(imageStrings, sheetStrings);
     processEndUI();
-  }
-
-  TN()
-  {
-    Resources::getInstance()->setOnUpdateEventListener(new TN::OnFieldUpdateEventListener);
   }
 
   int __x = 60;
@@ -164,6 +212,10 @@ private:
   }
 
 public:
+  TN()
+  {
+  }
+
   void onCreate()
   {
     super::onCreate();
@@ -182,20 +234,10 @@ public:
     super::onDestroy();
   }
 
-  static TN *getInstance()
-  {
-    if (TN::instance == nullptr)
-    {
-      log_inf(_TN_H, "Initialzing TN");
-      TN::instance = new TN();
-    }
-    return TN::instance;
-  }
-
   ~TN()
   {
     //TODO cleanup memory before exit
   }
 };
-TN *TN::instance = nullptr;
+}
 #endif

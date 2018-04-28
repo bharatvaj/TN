@@ -7,8 +7,8 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Window.H>
 
-#include "Resources.hpp"
-
+namespace tn
+{
 class Activity
 {
 private:
@@ -64,5 +64,5 @@ public:
     return Fl::run();
   }
 };
-
+}
 #endif

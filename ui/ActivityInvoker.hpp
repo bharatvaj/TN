@@ -1,5 +1,6 @@
 #ifndef _ACT_INV_H
 #define _ACT_INV_H "ActivityInvoker"
+#include <FL/Fl.H>
 template <class T>
 class ActivityInvoker
 {
@@ -10,6 +11,10 @@ class ActivityInvoker
     ActivityInvoker()
     {
         t = T::getInstance();
+    }
+    ActivityInvoker(T *t)
+    {
+        this->t = t;
     }
 
     int startActivity()
