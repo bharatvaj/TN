@@ -21,11 +21,12 @@ void onStart(TNView *v)
 void onClose(TNView *v)
 {
     log_inf(_MAIN, "Close");
+    exit(EXIT_SUCCESS);
 }
 
 void onExcelOpenFail(TNView *v)
 {
-    v->error(_MAIN, "Cannot open the specified excel file, please check permission of the file before convertion");
+    v->error("Excel File Invalid", "Cannot open the specified excel file, please check permission of the file before convertion");
     log_err(_MAIN, "Excel file open fail");
 }
 
@@ -70,11 +71,16 @@ void onConvert(TNView *v)
 {
     if (!v->checkFieldValidity())
     {
-        v->error(_MAIN, "Input is not valid");
+        v->error("Input Invalid", "Input is not valid");
         return;
     }
-    v->alert("Converting", "Please wait for some moment while conversion takes place");
-    log_inf(_MAIN, "Startig conversion");
+    v->alert("Converting", "Conversion is going to start and might take a while. Are you sure you want to continue?");
+    log_inf(_MAIN, "Starting conversion");
+    TNConvert *convert = new TNConvert();
+    if (convert->open(v->getExcelPath(), v->getImagePath()))
+    {
+        convert->convert();
+    }
 }
 
 TNEvent *event = TNEvent::getInstance();
@@ -82,12 +88,10 @@ TNView *view = TNView::getInstance();
 void exit_handler(int sig)
 {
     TNEvent::getInstance()->fireEvent(Event::Close, view);
-    exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[])
 {
-    signal(SIGINT, exit_handler);
     //register callbacks
     event->addEventHandler(Event::Start, onStart);
     event->addEventHandler(Event::Close, onClose);
@@ -104,5 +108,8 @@ int main(int argc, char *argv[])
     event->addEventHandler(Event::ConvertSuccess, onConvertSuccess);
     event->addEventHandler(Event::Convert, onConvert);
 
+    //start program
+    signal(SIGINT, exit_handler);
+    event->fireEvent(Event::Start, view);
     return view->run();
 }

@@ -1,7 +1,8 @@
 #ifndef _TN_VIEW
-#define _TN_VIEW
+#define _TN_VIEW "TNView"
 
 #include <iostream>
+#include <clog/clog.h>
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Button.H>
@@ -22,9 +23,9 @@ const int BROWSE_EXCEL = 0;
 const int BROWSE_IMAGE = 1;
 class TNView
 {
-    Fl_Double_Window *window;
 
   private:
+    Fl_Double_Window *window;
     TNView()
     {
     }
@@ -38,21 +39,27 @@ class TNView
     int buttonWidth = 60;
     int buttonHeight = 40;
 
-    bool excelSelected = false;
-    bool imageSelected = false;
-
     static TNView *instance;
+
+    Fl_Input *imageInput = nullptr;
+    Fl_Input *excelInput = nullptr;
 
     const char *name[20] = {
         "Excel",
         "Image"};
 
-    const char *filter[20] = {
+    const char *filter_excel[20] = {
         "*.xlsx"
-        "*.png",
+        "*.xls",
     };
 
-    static void convertCallback(Fl_Widget *w, void *o)
+    const char *filter_image[20] = {
+        ".tiff",
+        ".jpg",
+        "*png"};
+
+    static void
+    convertCallback(Fl_Widget *w, void *o)
     {
         TNView *view = (TNView *)o;
         TNEvent::getInstance()->events[Event::Convert](view);
@@ -72,9 +79,15 @@ class TNView
         }
     }
 
+    static void windowCallback(Fl_Widget *w, void *o)
+    {
+        TNEvent::getInstance()->fireEvent(Event::Close, TNView::getInstance());
+    }
+
     Fl_Double_Window *createWindow()
     {
         Fl_Double_Window *window = new Fl_Double_Window(0, 0, windowWidth, windowHeight, app_name);
+        window->callback(windowCallback);
         return window;
     }
 
@@ -84,6 +97,14 @@ class TNView
         int textBoxWidth = windowWidth - buttonWidth - (2 * leftMargin);
         int textBoxHeight = buttonHeight;
         Fl_Input *text = new Fl_Input(leftMargin, _y, textBoxWidth, textBoxHeight);
+        if (opt == BROWSE_EXCEL)
+        {
+            excelInput = text;
+        }
+        else if (opt == BROWSE_IMAGE)
+        {
+            imageInput = text;
+        }
         Fl_Button *btn = new Fl_Button(leftMargin + textBoxWidth, _y, buttonWidth, buttonHeight, name[opt]);
         btn->callback(browseCallback, new int(opt));
         _y += buttonHeight + 20;
@@ -98,9 +119,20 @@ class TNView
     }
 
   public:
+    const char *getImagePath()
+    {
+        return imageInput->value();
+    }
+
+    const char *getExcelPath()
+    {
+        return excelInput->value();
+    }
+
     void alert(std::string title, std::string message)
     {
-        switch (fl_choice((title + message).c_str(), "Yes", "No", 0))
+        fl_message_title(title.c_str());
+        switch (fl_choice((message).c_str(), "Yes", "No", 0))
         {
         case 0:
             //YES
@@ -113,29 +145,57 @@ class TNView
 
     void error(std::string title, std::string message)
     {
-        fl_choice((title + message).c_str(), "OK", 0, 0);
+        fl_message_title(title.c_str());
+        fl_choice((message).c_str(), "OK", 0, 0);
     }
     bool checkFieldValidity()
     {
-        return excelSelected && imageSelected;
+        if (imageInput->value() != NULL && excelInput != NULL)
+        {
+            return true;
+        }
+        return false;
     }
     bool runFileChooser(int opt)
     {
         Fl_File_Chooser *chooser = new Fl_File_Chooser("", "", Fl_File_Chooser::SINGLE, "");
-        chooser->filter(opt ? filter[0] : filter[1]);
-        chooser->show();
-        while (chooser->shown())
-        {
-            Fl::wait();
-        }
+
         switch (opt)
         {
         case BROWSE_EXCEL:
-            excelSelected = false;
-            return false;
+        {
+            chooser->filter(*filter_excel);
+            chooser->show();
+            while (chooser->shown())
+            {
+                Fl::wait();
+            }
+            const char *path = chooser->value();
+            if (path == NULL)
+            {
+                log_err(_TN_VIEW, "Excel not valid");
+                return false;
+            }
+            excelInput->value(path);
+            return true;
+        }
         case BROWSE_IMAGE:
-            imageSelected = false;
-            return false;
+        {
+            chooser->filter(*filter_image);
+            chooser->show();
+            while (chooser->shown())
+            {
+                Fl::wait();
+            }
+            const char *path = chooser->value();
+            if (path == NULL)
+            {
+                log_err(_TN_VIEW, "Image not valid");
+                return false;
+            }
+            imageInput->value(path);
+            return true;
+        }
         }
         return false;
     }
