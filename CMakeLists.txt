@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(TN)
+project(TN VERSION 0.2)
 find_package(Threads)
 find_package(FLTK REQUIRED)
 find_package(OpenCV REQUIRED )
