@@ -4,10 +4,15 @@
 using namespace std;
 class TNExcel
 {
-  public:
+  protected:
     string cNum;
     string cName;
     string cType;
+
+  public:
+    TNExcel()
+    {
+    }
     TNExcel(string cNum, string cName, string cType)
     {
         this->cNum = cNum;

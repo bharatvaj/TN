@@ -1,5 +1,5 @@
 #ifndef _TN_VIEW
-#define _TN_VIEW "TNView"
+#define _TN_VIEW "View"
 
 #include <iostream>
 #include <clog/clog.h>
@@ -9,26 +9,31 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_File_Chooser.H>
 
+#include <em/EventManager.hpp>
+
 namespace tn
 {
-class TNView;
+class View;
 }
-
-#include <TNEvent.hpp>
 
 namespace tn
 {
 const char *app_name = "TN";
-const int BROWSE_EXCEL = 0;
-const int BROWSE_IMAGE = 1;
-class TNView
+const int EXCEL = 0;
+const int IMAGE = 1;
+
+enum class ViewEvent
+{
+    Start,
+    Process,
+    Close
+};
+
+class View : public em::EventManager<ViewEvent, View *>
 {
 
   private:
     Fl_Double_Window *window;
-    TNView()
-    {
-    }
     int _x = 0;
     int _y = 20;
     int leftMargin = 20;
@@ -38,8 +43,6 @@ class TNView
 
     int buttonWidth = 60;
     int buttonHeight = 40;
-
-    static TNView *instance;
 
     Fl_Input *imageInput = nullptr;
     Fl_Input *excelInput = nullptr;
@@ -59,35 +62,34 @@ class TNView
         "*png"};
 
     static void
-    convertCallback(Fl_Widget *w, void *o)
+    processCallback(Fl_Widget *w, void *o)
     {
-        TNView *view = (TNView *)o;
-        TNEvent::getInstance()->events[Event::Convert](view);
+        View *view = (View *)o;
+        view->fireEvent(ViewEvent::Process, view);
+        //TNEvent::getInstance()->fireEvent(Event::Process, view);
     }
 
-    static void browseCallback(Fl_Widget *w, void *o)
+    static void browseExcel(Fl_Widget *w, void *o)
     {
-        int *opt = (int *)o;
-        switch (*opt)
-        {
-        case BROWSE_EXCEL:
-            TNEvent::getInstance()->events[Event::ExcelBrowse](TNView::getInstance());
-            break;
-        case BROWSE_IMAGE:
-            TNEvent::getInstance()->events[Event::ImageBrowse](TNView::getInstance());
-            break;
-        }
+        View *v = (View *)o;
+        v->runFileChooser(EXCEL);
+    }
+    static void browseImage(Fl_Widget *w, void *o)
+    {
+        View *v = (View *)o;
+        v->runFileChooser(IMAGE);
     }
 
     static void windowCallback(Fl_Widget *w, void *o)
     {
-        TNEvent::getInstance()->fireEvent(Event::Close, TNView::getInstance());
+        View *view = (View *)o;
+        view->fireEvent(ViewEvent::Close, view);
     }
 
     Fl_Double_Window *createWindow()
     {
         Fl_Double_Window *window = new Fl_Double_Window(0, 0, windowWidth, windowHeight, app_name);
-        window->callback(windowCallback);
+        window->callback(windowCallback, this);
         return window;
     }
 
@@ -97,49 +99,58 @@ class TNView
         int textBoxWidth = windowWidth - buttonWidth - (2 * leftMargin);
         int textBoxHeight = buttonHeight;
         Fl_Input *text = new Fl_Input(leftMargin, _y, textBoxWidth, textBoxHeight);
-        if (opt == BROWSE_EXCEL)
+        Fl_Button *btn = new Fl_Button(leftMargin + textBoxWidth, _y, buttonWidth, buttonHeight, name[opt]);
+        if (opt == EXCEL)
         {
             excelInput = text;
+            btn->callback(browseExcel, this);
         }
-        else if (opt == BROWSE_IMAGE)
+        else if (opt == IMAGE)
         {
             imageInput = text;
+            btn->callback(browseImage, this);
         }
-        Fl_Button *btn = new Fl_Button(leftMargin + textBoxWidth, _y, buttonWidth, buttonHeight, name[opt]);
-        btn->callback(browseCallback, new int(opt));
         _y += buttonHeight + 20;
         return btn;
     }
 
-    Fl_Button *createConvertButton()
+    Fl_Button *createProcessButton()
     {
-        Fl_Button *btn = new Fl_Button(leftMargin, _y, buttonWidth, buttonHeight, "Convert");
-        btn->callback(convertCallback, this);
+        Fl_Button *btn = new Fl_Button(leftMargin, _y, buttonWidth, buttonHeight, "Process");
+        btn->callback(processCallback, this);
         return btn;
     }
 
   public:
-    const char *getImagePath()
-    {
-        return imageInput->value();
-    }
-
     const char *getExcelPath()
     {
         return excelInput->value();
     }
 
-    void alert(std::string title, std::string message)
+    const char *getImagePath()
+    {
+        return imageInput->value();
+    }
+
+    void setExcelPath(const char *excelPath)
+    {
+        excelInput->value(excelPath);
+    }
+
+    void setImagePath(const char *imagePath)
+    {
+        imageInput->value(imagePath);
+    }
+
+    bool alert(std::string title, std::string message)
     {
         fl_message_title(title.c_str());
         switch (fl_choice((message).c_str(), "Yes", "No", 0))
         {
         case 0:
-            //YES
-            break;
+            return true;
         case 1:
-            //NO
-            break;
+            return false;
         }
     }
 
@@ -150,11 +161,15 @@ class TNView
     }
     bool checkFieldValidity()
     {
-        if (imageInput->value() != NULL && excelInput != NULL)
+        if (excelInput == nullptr || imageInput == nullptr)
         {
-            return true;
+            return false;
         }
-        return false;
+        if (strcmp(excelInput->value(), "") == 0 && strcmp(imageInput->value(), "") == 0)
+        {
+            return false;
+        }
+        return true;
     }
     bool runFileChooser(int opt)
     {
@@ -162,7 +177,7 @@ class TNView
 
         switch (opt)
         {
-        case BROWSE_EXCEL:
+        case EXCEL:
         {
             chooser->filter(*filter_excel);
             chooser->show();
@@ -179,7 +194,7 @@ class TNView
             excelInput->value(path);
             return true;
         }
-        case BROWSE_IMAGE:
+        case IMAGE:
         {
             chooser->filter(*filter_image);
             chooser->show();
@@ -200,13 +215,12 @@ class TNView
         return false;
     }
 
-    static TNView *getInstance()
+    View()
     {
-        if (instance == nullptr)
-        {
-            instance = new TNView();
-        }
-        return instance;
+        window = createWindow();
+        window->add(createField(EXCEL));
+        window->add(createField(IMAGE));
+        window->add(createProcessButton());
     }
 
     Fl_Window *getWindow()
@@ -215,14 +229,9 @@ class TNView
     }
     int run()
     {
-        window = createWindow();
-        window->add(createField(BROWSE_EXCEL));
-        window->add(createField(BROWSE_IMAGE));
-        window->add(createConvertButton());
         window->show();
         return Fl::run();
     }
 };
-TNView *TNView::instance = nullptr;
 }
 #endif
