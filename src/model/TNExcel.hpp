@@ -31,5 +31,17 @@ class TNExcel
     {
         return cType;
     }
+    void setCNum(string cNum)
+    {
+        this->cNum = cNum;
+    }
+    void setCName(string cName)
+    {
+        this->cName = cName;
+    }
+    void setCType(string cType)
+    {
+        this->cType = cType;
+    }
 };
 #endif

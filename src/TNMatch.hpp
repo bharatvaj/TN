@@ -26,7 +26,17 @@ public:
 
   std::vector<TNImage> start(std::vector<TNExcel> extractedExcel, std::vector<TNImage> extractedImage)
   {
-    std::vector<TNImage> filledImage;
+    std::vector<TNImage> filledImage = extractedImage;
+    for (TNExcel excel : extractedExcel)
+    {
+      for (TNImage image : extractedImage)
+      {
+        if (excel.getCName() == image.getCName() && excel.getCType() == image.getCType())
+        {
+          image.setCNum(excel.getCNum());
+        }
+      }
+    }
     return filledImage;
   }
 };
