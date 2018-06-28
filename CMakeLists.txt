@@ -12,8 +12,6 @@ target_include_directories(TN PRIVATE ${Tesseract_INCLUDE_DIRS})
 
 target_link_libraries(TN ${CMAKE_THREAD_LIBS_INIT} )
 target_link_libraries(TN clog)
-target_link_libraries(TN xlsxio_read)
-target_link_libraries(TN xlsxio_write)
 target_link_libraries(TN ${FLTK_LIBRARIES})
 target_link_libraries(TN ${OpenCV_LIBS})
 target_link_libraries(TN ${Tesseract_LIBRARIES} )
