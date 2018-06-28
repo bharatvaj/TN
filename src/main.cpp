@@ -10,7 +10,10 @@ using namespace tn;
 
 void exit_handler(int sig)
 {
-    exit(EXIT_SUCCESS);
+    if (sig == SIGINT)
+    {
+        exit(EXIT_SUCCESS);
+    }
 }
 
 void onClose(View *v)
